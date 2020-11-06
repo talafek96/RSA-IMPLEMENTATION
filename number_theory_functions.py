@@ -12,8 +12,14 @@ def extended_gcd(a,b):
     -------
     (d, x, y): d = gcd(a,b) = a*x + b*y
     """
-
-
+    x, x_temp = 1, 0
+    y, y_temp = 0, 1
+    while b:
+        q = a // b
+        x, x_temp = x_temp, x - q * x_temp
+        y, y_temp = y_temp, y - q * y_temp
+        a, b = b, a % b
+    return a, x, y
 
 def modular_inverse(a,n):
     """
@@ -28,7 +34,10 @@ def modular_inverse(a,n):
     -------
     x: such that (a*x % n) == 1 and 0 <= x < n if one exists, else None
     """
-
+    g, x, _ = extended_gcd(a,n)
+    if g != 1:
+        return None
+    return x % n
 
 def modular_exponent(a, d, n):
     """
@@ -44,6 +53,14 @@ def modular_exponent(a, d, n):
     -------
     b: such that b == (a**d) % n
     """
+    if d == 0:
+        return 1
+    if d % 2 == 0: # d is even
+        half = modular_exponent(a % n, d//2, n)
+        return (half * half) % n
+    if d % 2 == 1: # d is odd
+        half = modular_exponent(a % n, (d-1)//2, n)
+        return (((half * half) % n) * (a % n)) % n
 
 def miller_rabin(n):
     """
@@ -94,7 +111,7 @@ def is_prime(n):
     return True
 
 def generate_prime(digits):
-    for i in range(digits * 10):
+    for _ in range(digits * 10):
         n = randrange(10**(digits-1), 10**digits)
         if is_prime(n):
             return n

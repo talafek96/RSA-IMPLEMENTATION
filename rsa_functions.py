@@ -1,4 +1,5 @@
-import number_theory_functions
+import number_theory_functions as num
+from random import randrange
 
 class RSA():
     def __init__(self, public_key, private_key = None):
@@ -20,7 +21,24 @@ class RSA():
         * The public key (N,e)
         * The private key (N,d)
         """
+        p = num.generate_prime(digits)
+        q = num.generate_prime(digits)
+        N = p*q
+        phiN = (p-1)*(q-1)
+        d = RSA.generate_private_key(phiN)
+        e = num.modular_inverse(d, phiN)
+        public_key = (N,e)
+        private_key = (N,d)
+        return RSA(public_key, private_key)
 
+    @staticmethod
+    def generate_private_key(phiN):
+        e = randrange(phiN//2 + 1, phiN-1)
+        g, _, _ = num.extended_gcd(e, phiN)
+        while g != 1:
+            e = randrange(phiN//2 + 1, phiN-1)
+            g, _, _ = num.extended_gcd(e, phiN)
+        return e
 
     def encrypt(self, m):
         """
@@ -34,6 +52,7 @@ class RSA():
         -------
         c : The encrypted ciphertext
         """
+        return num.modular_exponent(m, self.private_key[1], self.private_key[0])
 
 
     def decrypt(self, c):
@@ -48,3 +67,4 @@ class RSA():
         -------
         m : The decrypted plaintext
        """
+        return num.modular_exponent(c, self.public_key[1], self.public_key[0])
